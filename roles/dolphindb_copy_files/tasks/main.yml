@@ -1,0 +1,30 @@
+---
+   - name: create server exec dir
+     become: yes
+     file:
+      path: "{{ server_dir }}"
+      state: directory
+      owner: "{{ansible_user}}"
+      group: "{{ansible_user}}"
+   - name: create log dir
+     become: yes
+     file: 
+      path: "{{ log_dir }}"
+      state: directory
+      owner: "{{ansible_user}}"
+      group: "{{ansible_user}}"
+   - name: copy DolphinDB zip to remote and unzip
+     ansible.builtin.unarchive:
+       src: "{{local_exec_zip}}"
+       dest: "{{ server_dir }}"
+       creates: "{{ server_dir }}/server/"
+   - name: copy license
+     copy:
+       src: "{{local_license}}"
+       dest: "{{server_dir}}/server/"
+   - name: create config dir
+     file: path="{{ server_dir }}/server/config" state=directory
+   - name: chmodx
+     shell: chmod +x ./dolphindb
+     args:
+       chdir: "{{ server_dir }}/server/"

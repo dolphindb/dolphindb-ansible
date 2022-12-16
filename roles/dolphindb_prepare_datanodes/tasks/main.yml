@@ -1,0 +1,23 @@
+---
+   - name: create data volume dir
+     become: yes
+     file: 
+       path: "{{ item }}/{{inventory_hostname}}"
+       state: directory
+       owner: "{{ansible_user}}"
+       group: "{{ansible_user}}"
+     loop: "{{datanode_volume_prefix.split(',')}}"
+   - name: create data redolog dir
+     become: yes
+     file:
+       path: "{{ datanode_redolog_prefix }}"
+       state: directory
+       owner: "{{ansible_user}}"
+       group: "{{ansible_user}}"
+   - name: create chunkMetaDir
+     become: yes
+     file: 
+       path: "{{ datanode_chunk_meta_prefix }}"
+       state: directory
+       owner: "{{ansible_user}}"
+       group: "{{ansible_user}}"

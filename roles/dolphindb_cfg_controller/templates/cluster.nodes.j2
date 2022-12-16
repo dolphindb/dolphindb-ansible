@@ -1,0 +1,15 @@
+localSite,mode
+{% for alias in groups.controllers -%}
+    {{hostvars[alias].ansible_host}}:{{hostvars[alias].port}}:{{alias}},controller
+{% endfor %}
+{% for alias in groups.agents -%}
+    {{hostvars[alias].ansible_host}}:{{hostvars[alias].port}}:{{alias}},agent
+{% endfor %}
+{% for alias in groups.datanodes -%}
+    {{hostvars[alias].ansible_host}}:{{hostvars[alias].port}}:{{alias}},datanode
+{% endfor %}
+{% if groups.computenodes is defined %}
+{% for alias in groups.computenodes -%}
+    {{hostvars[alias].ansible_host}}:{{hostvars[alias].port}}:{{alias}},computenode
+{% endfor %}
+{% endif %}

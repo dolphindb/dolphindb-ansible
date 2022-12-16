@@ -1,0 +1,14 @@
+mode=agent
+{% include './cfg/agent.cfg' %}
+
+localSite={{ansible_host}}:{{ hostvars[inventory_hostname].port }}:{{ inventory_hostname }}
+controllerSite={{hostvars[groups.controllers[0]].ansible_host}}:{{hostvars[groups.controllers[0]].port}}:{{groups.controllers[0]}}
+
+{%if raft_controller is defined and raft_controller%}
+sites={{ansible_host}}:{{ hostvars[inventory_hostname].port }}:{{ inventory_hostname }}:agent,
+{%- for alias in groups.controllers -%}
+    {{hostvars[alias].ansible_host}}:{{hostvars[alias].port}}:{{alias}}:controller
+    {%- if not loop.last -%},{%- endif -%}
+{%- endfor %}
+
+{% endif %}

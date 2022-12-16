@@ -1,0 +1,16 @@
+---
+   - name: create controller home dir
+     become: yes
+     file: path={{ controller_home_dir }} state=directory owner={{ansible_user}} group={{ansible_user}}
+   - name: copy controller.cfg
+     copy:
+       src: "./{{generated_cfg}}/{{inventory_hostname}}.controller.cfg"
+       dest: "{{ server_dir }}/server/config/controller.cfg"
+   - name: copy cluster.cfg
+     copy:       
+       src: ./{{generated_cfg}}/cluster.cfg
+       dest: "{{ server_dir }}/server/config/cluster.cfg"
+   - name: copy cluster.nodes
+     copy:       
+       src: ./{{generated_cfg}}/cluster.nodes
+       dest: "{{ server_dir }}/server/config/cluster.nodes"

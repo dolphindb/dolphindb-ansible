@@ -1,0 +1,28 @@
+{% include './cfg/cluster.cfg' %}
+
+{% for alias in groups.datanodes %}
+{{alias}}.volumes={% for prefix in hostvars[alias].datanode_volume_prefix.split(',') %}{{prefix}}/{{alias}}{{'' if loop.last else ','}}{% endfor %}
+
+{% endfor %}
+
+{% for alias in groups.datanodes %}
+{{alias}}.redoLogDir={{hostvars[alias].datanode_redolog_prefix}}/{{alias}}
+{% endfor %}
+
+{% for alias in groups.datanodes %}
+{{alias}}.chunkMetaDir={{hostvars[alias].datanode_chunk_meta_prefix}}/{{alias}}
+{% endfor %}
+
+{% for alias in groups.datanodes if hostvars[alias].datanode_tsdb_redolog_prefix is defined %}
+{{alias}}.TSDBRedoLogDir={{hostvars[alias].datanode_tsdb_redolog_prefix}}/{{alias}}/redolog
+{% endfor %}
+
+{% for alias in groups.datanodes if hostvars[alias].sub_port is defined %}
+{{alias}}.subPort={{hostvars[alias].sub_port}}
+{% endfor %}
+
+{% if groups.computenodes is defined %}
+{% for alias in groups.computenodes if hostvars[alias].sub_port is defined %}
+{{alias}}.subPort={{hostvars[alias].sub_port}}
+{% endfor %}
+{% endif %}

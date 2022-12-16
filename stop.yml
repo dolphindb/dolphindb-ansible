@@ -1,0 +1,15 @@
+---
+
+- name: stop all
+  hosts: datanodes:agents:computenodes:controllers
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/sbin/"
+  tasks:       
+   - name: show process ids based on listening port
+     register: pid_reg
+     shell: lsof -t -sTCP:LISTEN -i :{{hostvars[inventory_hostname].port}} 
+
+   - debug: msg="{{ pid_reg.stdout }}"
+
+   - name: kill processes based on listening port
+     shell: kill -15 $(lsof -t -sTCP:LISTEN -i :{{hostvars[inventory_hostname].port}}) 

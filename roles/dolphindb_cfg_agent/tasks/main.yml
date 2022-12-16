@@ -1,0 +1,5 @@
+---
+   - name: create agent.cfg from agent.cfg.j2
+     template:
+       src: ./templates/agent.cfg.j2
+       dest: "./{{generated_cfg}}/{{inventory_hostname}}.agent.cfg"

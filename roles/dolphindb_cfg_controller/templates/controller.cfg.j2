@@ -1,0 +1,6 @@
+mode=controller
+localSite={{ansible_host}}:{{ hostvars[inventory_hostname]["port"] }}:{{ inventory_hostname }}
+{%if raft_controller is defined and raft_controller%}
+dfsHAMode=Raft
+{% endif %}
+{% include './cfg/controller.cfg' %}

@@ -1,0 +1,17 @@
+---
+   - name: create generated_cfg dir
+     file: 
+      path: "./{{generated_cfg}}"
+      state: directory  
+   - name: create controller.cfg from controller.cfg.j2
+     template:
+       src: ./templates/controller.cfg.j2
+       dest: "./{{generated_cfg}}/{{inventory_hostname}}.controller.cfg"
+   - name: create cluster.nodes from cluster.nodes.j2
+     template:
+       src: ./templates/cluster.nodes.j2
+       dest: "./{{generated_cfg}}/cluster.nodes"
+   - name: create cluster.cfg from cluster.cfg.j2
+     template:
+       src: ./templates/cluster.cfg.j2
+       dest: "./{{generated_cfg}}/cluster.cfg"

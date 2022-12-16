@@ -1,0 +1,101 @@
+---
+- name: set generated_cfg if undefined 
+  hosts: controllers:agents
+  any_errors_fatal: true
+  connection: local
+  gather_facts: no
+  become: no  
+  tasks:
+   - name: set generated_cfg if undefined
+     set_fact: generated_cfg="default_cfg"
+     when: generated_cfg is undefined
+- name: generate controllers cfgs
+  hosts: controllers
+  any_errors_fatal: true
+  connection: local
+  gather_facts: no
+  become: no
+  roles: 
+    - dolphindb_cfg_controller
+- name: generate agents cfgs
+  hosts: agents
+  any_errors_fatal: true
+  connection: local
+  gather_facts: no
+  become: no
+  roles: 
+    - dolphindb_cfg_agent
+- name: generate unique_ips group
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  become: no
+  tasks:
+  - debug: 
+      msg: "{{groups.all  | map('extract', hostvars, ['ansible_host']) |list |unique}}"
+  - add_host:
+      name: 'dummy{{index}}'
+      ansible_host: '{{ item }}'
+      groups: unique_ips
+    loop: "{{ groups.all  | map('extract', hostvars, ['ansible_host']) |list |unique }}"
+    loop_control:
+      index_var: index
+
+- name: check if other process is already listening on port
+  hosts: controllers:agents:datanodes:computenodes
+  any_errors_fatal: true
+  become: yes
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/sbin/"
+  tasks:       
+   - name: check if ports available
+     register: lsof_res
+     shell: lsof -t -sTCP:LISTEN -i :{{hostvars[inventory_hostname].port}}
+     failed_when: lsof_res.stdout | length > 0
+     changed_when: False
+
+-  name: copy binaries and license
+   hosts: unique_ips
+   any_errors_fatal: true
+   roles:
+     - dolphindb_copy_files
+
+-  name: prepare datanodes
+   hosts: datanodes
+   any_errors_fatal: true
+   roles:
+     - dolphindb_prepare_datanodes
+
+-  name: prepare controllers
+   hosts: controllers
+   any_errors_fatal: true
+   roles:
+     - dolphindb_prepare_controllers
+- name: prepare agents
+  hosts: agents
+  any_errors_fatal: true
+  tasks:       
+   - name: create agents home dir
+     file: path={{ agent_home_dir }} state=directory  
+   - name: copy agent.cfg
+     copy:
+       src: "./{{generated_cfg}}/{{inventory_hostname}}.agent.cfg"
+       dest: "{{ server_dir }}/server/config/agent.cfg"
+
+- name: start controllers
+  hosts: controllers
+  any_errors_fatal: true
+  tasks:       
+   - name: start controllers
+     shell: nohup ./dolphindb -console 0 -mode controller -home {{controller_home_dir}} -config config/controller.cfg -clusterConfig config/cluster.cfg -logFile {{log_dir}}/controller.log -nodesFile config/cluster.nodes & echo $! > ./controller.pid
+     args:
+       chdir: "{{ server_dir }}/server/"
+       
+- name: start agents
+  hosts: agents
+  any_errors_fatal: true
+  tasks:       
+   - name: start agents
+     shell: nohup ./dolphindb -console 0 -mode agent -home  {{agent_home_dir}} -config config/agent.cfg -logFile {{log_dir}}/agent.log  & echo $! > ./agent.pid
+     args:
+       chdir: "{{ server_dir }}/server/"
