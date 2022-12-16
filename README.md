@@ -113,6 +113,8 @@ controller1 ansible_host=192.168.1.1 port=10010
 [agents]
 agent1  ansible_host=192.198.1.1 port=10011
 agent2  ansible_host=192.198.1.2 port=10011
+[agents:vars]
+agent_home_dir="/ssd/ssd1/agenthome"
 [datanodes]
 data1 ansible_host=192.198.1.1 port=10012
 data2 ansible_host=192.198.1.2 port=10012
